@@ -117,3 +117,75 @@ exports.delete = async (req, res) => {
     res.status(500).json(err);
   }
 };
+
+// add vaccinated to user
+
+exports.vaccinated = async (req, res) => {
+  try {
+    const { userId, vaccineId, vaccineLotId } = req.body;
+    const newVaccine = new UserVaccine({
+      user: userId,
+      vaccine: vaccineId,
+      vaccineLot: vaccineLotId,
+    });
+    const savedUserVaccine = await newVaccine.save();
+    await VaccineLot.findOneAndUpdate(
+      {
+        _id: vaccineLotId,
+      },
+      {
+        $inc: { vaccinated: +1 },
+      }
+    );
+
+    savedUserVaccine._doc.vaccine = await Vaccine.findById(vaccineId);
+    savedUserVaccine._doc.vaccineLot = await VaccineLot.findById(vaccineLotId);
+    res.status(201).json(savedUserVaccine);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+};
+
+// get places of user
+
+exports.getAllPlace = async (req, res) => {
+  try {
+    const list = await Place.find({
+      creator: req.params.userId,
+    });
+    res.status(200).json(list);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+};
+// user check in place
+
+exports.checkinPlace = async (req, res) => {
+  try {
+    const newVisit = new UserPlace({
+      user: req.user._id,
+      place: req.body.placeId,
+    });
+    const savedUserPlace = await newVisit.save();
+    res.status(201).json(savedUserPlace);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+};
+
+// get place that user checked in
+
+exports.placeVisited = async (req, res) => {
+  try {
+    const list = await UserPlace.find({ user: req.params.userId }).populate(
+      "place"
+    );
+    res.status(200).json(list);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+};
