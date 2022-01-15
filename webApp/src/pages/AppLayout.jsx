@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { isAuthenticated } from "../handlers/authHandler";
 import { Outlet, useNavigate } from "react-router-dom";
+import { Loading, SideBar, TopNav } from "../components";
+import { Box, colors, Toolbar } from "@mui/material";
 const AppLayout = () => {
   const navigate = useNavigate();
-  //  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -13,7 +15,31 @@ const AppLayout = () => {
     };
     checkToken();
   }, []);
-  return <div>AppLayout</div>;
+
+  return isLoading ? (
+    <Box sx={{ width: "100%", height: "100vh" }}>
+      <Loading />
+    </Box>
+  ) : (
+    <Box>
+      <TopNav />
+      <Box sx={{ display: "flex" }}>
+        <SideBar />
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            backgroundColor: colors.grey["100"],
+            width: "max-content",
+          }}
+        >
+          <Toolbar />
+          <Outlet />
+        </Box>
+      </Box>
+    </Box>
+  );
 };
 
 export default AppLayout;
